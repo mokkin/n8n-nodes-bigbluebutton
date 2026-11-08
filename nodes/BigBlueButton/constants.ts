@@ -1,0 +1,120 @@
+import type { INodePropertyOptions } from 'n8n-workflow';
+
+function toOptions(values: string[]): INodePropertyOptions[] {
+	return values.map((value) => ({
+		name: value.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
+		value,
+	}));
+}
+
+/** Values for the `disabledFeatures` / `disabledFeaturesExclude` parameters of `create`. */
+export const DISABLED_FEATURES = toOptions([
+	'breakoutRooms',
+	'cameraAsContent',
+	'captions',
+	'chat',
+	'chatEmojiPicker',
+	'chatMessageReactions',
+	'customVirtualBackgrounds',
+	'deleteChatMessage',
+	'downloadPresentationConvertedToPdf',
+	'downloadPresentationOriginalFile',
+	'downloadPresentationWithAnnotations',
+	'editChatMessage',
+	'externalVideos',
+	'importPresentationWithAnnotationsFromBreakoutRooms',
+	'importSharedNotesFromBreakoutRooms',
+	'infiniteWhiteboard',
+	'layouts',
+	'learningDashboard',
+	'learningDashboardDownloadSessionData',
+	'liveTranscription',
+	'multiFunctionalMode',
+	'pinChatMessage',
+	'plugins',
+	'polls',
+	'presentation',
+	'privateChat',
+	'quizzes',
+	'raiseHand',
+	'replyChatMessage',
+	'screenshare',
+	'sharedNotes',
+	'snapshotOfCurrentSlide',
+	'timer',
+	'userReactions',
+	'virtualBackgrounds',
+	'webcamGrid',
+]);
+
+export const MEETING_LAYOUTS: INodePropertyOptions[] = [
+	{ name: 'Cameras Only', value: 'CAMERAS_ONLY' },
+	{ name: 'Custom Layout (BBB 3.0)', value: 'CUSTOM_LAYOUT' },
+	{ name: 'Media Only', value: 'MEDIA_ONLY' },
+	{ name: 'Participants and Chat Only', value: 'PARTICIPANTS_AND_CHAT_ONLY' },
+	{ name: 'Presentation Focus (BBB 3.0)', value: 'PRESENTATION_FOCUS' },
+	{ name: 'Presentation Only', value: 'PRESENTATION_ONLY' },
+	{ name: 'Smart Layout (BBB 3.0)', value: 'SMART_LAYOUT' },
+	{ name: 'Unified Layout', value: 'UNIFIED_LAYOUT' },
+	{ name: 'Video Focus (BBB 3.0)', value: 'VIDEO_FOCUS' },
+];
+
+export const MEDIA_BRIDGES: INodePropertyOptions[] = [
+	{ name: 'BBB WebRTC SFU', value: 'bbb-webrtc-sfu' },
+	{ name: 'LiveKit', value: 'livekit' },
+];
+
+export const RECORDING_STATES: INodePropertyOptions[] = [
+	{ name: 'Any', value: 'any' },
+	{ name: 'Deleted', value: 'deleted' },
+	{ name: 'Processed', value: 'processed' },
+	{ name: 'Processing', value: 'processing' },
+	{ name: 'Published', value: 'published' },
+	{ name: 'Unpublished', value: 'unpublished' },
+];
+
+/** Event IDs emitted by bbb-webhooks (data.id). */
+export const WEBHOOK_EVENTS: INodePropertyOptions[] = [
+	'chat-group-message-sent',
+	'meeting-created',
+	'meeting-ended',
+	'meeting-presentation-changed',
+	'meeting-recording-started',
+	'meeting-recording-stopped',
+	'meeting-recording-unhandled',
+	'meeting-screenshare-started',
+	'meeting-screenshare-stopped',
+	'pad-content',
+	'poll-responded',
+	'poll-started',
+	'rap-archive-ended',
+	'rap-archive-started',
+	'rap-deleted',
+	'rap-post-archive-ended',
+	'rap-post-archive-started',
+	'rap-post-process-ended',
+	'rap-post-process-started',
+	'rap-post-publish-ended',
+	'rap-post-publish-started',
+	'rap-process-ended',
+	'rap-process-started',
+	'rap-publish-ended',
+	'rap-publish-started',
+	'rap-published',
+	'rap-sanity-ended',
+	'rap-sanity-started',
+	'rap-unpublished',
+	'user-audio-muted',
+	'user-audio-unhandled',
+	'user-audio-unmuted',
+	'user-audio-voice-disabled',
+	'user-audio-voice-enabled',
+	'user-cam-broadcast-end',
+	'user-cam-broadcast-start',
+	'user-emoji-changed',
+	'user-joined',
+	'user-left',
+	'user-presenter-assigned',
+	'user-presenter-unassigned',
+	'user-raise-hand-changed',
+].map((value) => ({ name: value, value }));

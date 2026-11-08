@@ -1,0 +1,59 @@
+{
+  "name": "n8n-nodes-bigbluebutton",
+  "version": "0.1.0",
+  "description": "n8n community node for the BigBlueButton API (meetings, recordings, webhooks)",
+  "license": "MIT",
+  "homepage": "https://github.com/mokkin/n8n-nodes-bigbluebutton",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "bigbluebutton",
+    "bbb",
+    "video conferencing"
+  ],
+  "author": {
+    "name": "mokkin",
+    "email": "github@haybit.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mokkin/n8n-nodes-bigbluebutton.git"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "build:watch": "tsc --watch",
+    "dev": "n8n-node dev",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "test": "npm run build && node --test \"test/*.test.js\"",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/BigBlueButtonApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/BigBlueButton/BigBlueButton.node.js",
+      "dist/nodes/BigBlueButtonTrigger/BigBlueButtonTrigger.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "0.55.5",
+    "eslint": "9.29.0",
+    "prettier": "3.6.2",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  },
+  "engines": {
+    "node": ">=20.15"
+  }
+}
