@@ -112,7 +112,7 @@ npm run dev
 
 ### Releasing
 
-Publishing happens via GitHub Actions with npm provenance (required by n8n for verified community nodes): push a version tag like `0.1.1` (or run `npm run release` locally, which bumps the version, updates the changelog, tags and pushes). See `.github/workflows/publish.yml` for the one-time npm setup (Trusted Publishing or `NPM_TOKEN` secret).
+Publishing happens via GitHub Actions with npm provenance (required by n8n for verified community nodes). Bump the version in `package.json` (and `CHANGELOG.md`) and push to `main`: the publish workflow releases every version that is not on npm yet and creates the git tag. Pushing a version tag or running `npm run release` locally works as well. See `.github/workflows/publish.yml` for the one-time npm setup (Trusted Publishing or `NPM_TOKEN` secret).
 
 ## Resources
 

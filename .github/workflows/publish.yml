@@ -37,11 +37,13 @@
 # Both options work with --provenance. Provenance is signed by GitHub's OIDC
 # infrastructure regardless of how npm authentication is handled.
 #
-# ─── TAG CONVENTION ────────────────────────────────────────────────────────────
+# ─── TRIGGERS ──────────────────────────────────────────────────────────────────
 #
-# This workflow triggers on tags matching "*.*.*" (e.g. 0.2.0).
-# If you prefer tags with a "v" prefix (e.g. v0.2.0), change the filter to:
-#   tags: ['v*.*.*']
+# - Push to main: publishes if the version in package.json is not on npm yet,
+#   then creates the matching git tag (e.g. 0.2.0). Bump the version to release.
+# - Push of a tag matching "*.*.*" (e.g. 0.2.0), e.g. via `npm run release`.
+# - Manual start ("Run workflow" in the Actions tab).
+# In all cases nothing happens if the version is already published.
 #
 # ─── RELEASE PROCESS ───────────────────────────────────────────────────────────
 #
@@ -56,10 +58,16 @@ name: Publish
 
 on:
   push:
+    branches:
+      - main
     tags:
       # Matches 0.1.0, 1.2.3, 2.0.0-rc.1, etc.
-      # See "TAG CONVENTION" above if you prefer tags with a "v" prefix.
       - '*.*.*'
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -69,31 +77,58 @@ jobs:
     permissions:
       # Required to mint an OIDC token for npm provenance attestation.
       id-token: write
-      # Scoped down from the default (write) for least-privilege publishing.
-      contents: read
+      # Required to push the release tag after publishing from main.
+      contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 'lts/*'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Check whether this version is already published
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/* && "${GITHUB_REF#refs/tags/}" != "$VERSION" ]]; then
+            echo "::error::Tag ${GITHUB_REF#refs/tags/} does not match package.json version $VERSION"
+            exit 1
+          fi
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "$NAME@$VERSION is already published, nothing to do."
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Install dependencies
-        run: 'npm ci'
+        if: steps.check.outputs.publish == 'true'
+        run: npm ci
+
+      - name: Test
+        if: steps.check.outputs.publish == 'true'
+        run: npm test
 
       - name: Release
-        # Publishes to npm with a provenance attestation (requires id-token: write above).
-        # Lint and build run automatically as part of the release process.
-        #
-        # Option A (OIDC): leave NPM_TOKEN unset — the token step is skipped and
-        #   npm uses the OIDC exchange instead.
-        # Option B (token): set NPM_TOKEN in repo secrets — it is written to
-        #   .npmrc here before publishing.
+        if: steps.check.outputs.publish == 'true'
+        # Lints, builds and publishes with a provenance attestation (requires id-token: write).
+        # Option A (OIDC trusted publishing): leave NPM_TOKEN unset.
+        # Option B (token): set the NPM_TOKEN repository secret.
         run: |
-          [ -n "$NPM_TOKEN" ] && npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          if [ -n "$NPM_TOKEN" ]; then npm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"; fi
           npm run release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag
+        if: steps.check.outputs.publish == 'true' && !startsWith(github.ref, 'refs/tags/')
+        run: |
+          git tag "${{ steps.check.outputs.version }}"
+          git push origin "${{ steps.check.outputs.version }}"
